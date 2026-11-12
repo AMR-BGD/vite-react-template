@@ -1,9 +1,11 @@
-import { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import { Grid, Poster, Row, useInfinite, type OpenFn } from "./components/Cards";
 import Detail from "./components/Detail";
 import Player from "./components/Player";
 import Setup from "./components/Setup";
+import { playNative } from "./lib/native";
+import { focusFirst, onArrowKey } from "./lib/spatial";
 import { groupBy, parseM3U, type Entry, type Library, type Show, type Stream } from "./lib/m3u";
 import {
 	clearPlaylist,
@@ -120,16 +122,51 @@ export default function App() {
 	const closePlayer = useCallback(() => setPlaying(null), []);
 	const closeDetail = useCallback(() => setDetail(null), []);
 
+	// On Android TV the native player takes over; in a browser we use our own.
+	const play = (queue: Stream[], index: number) => {
+		if (!playNative(queue, index, progress[queue[index].id])) setPlaying({ queue, index });
+	};
+
+	// Back (remote) / Escape: close the top-most thing. Returns false when at the root.
+	const back = useRef<() => boolean>(() => false);
+	useEffect(() => {
+		back.current = () => {
+			if (playing) setPlaying(null);
+			else if (detail) setDetail(null);
+			else if (query) setQuery("");
+			else if (group) setGroup(null);
+			else if (tab !== "home") setTab("home");
+			else return false;
+			return true;
+		};
+	});
+	useEffect(() => {
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === "Escape") back.current();
+			else onArrowKey(e);
+		};
+		window.addEventListener("keydown", onKey);
+		window.__back = () => back.current();
+		window.__nativeProgress = (list) => list.forEach((p) => onProgress(p.id, p.t, p.d));
+		return () => window.removeEventListener("keydown", onKey);
+	}, [onProgress]);
+
+	// Keep something focused so the remote always has a starting point.
+	const ready = !booting && !!data;
+	useEffect(() => {
+		if (ready && !detail && !playing) focusFirst();
+	}, [ready, tab, group, detail, playing]);
+
 	const lib = data?.lib;
 
 	const open: OpenFn = (entry, siblings) => {
 		if (entry.kind === "live") {
 			const queue = siblings.filter((s): s is Stream => s.kind === "live");
-			setPlaying({ queue, index: Math.max(0, queue.indexOf(entry)) });
+			play(queue, Math.max(0, queue.indexOf(entry)));
 		} else if (entry.kind === "episode") {
 			const show = lib?.byId.get(entry.showId!) as Show | undefined;
 			const queue = show?.episodes ?? [entry];
-			setPlaying({ queue, index: Math.max(0, queue.indexOf(entry)) });
+			play(queue, Math.max(0, queue.indexOf(entry)));
 		} else setDetail(entry);
 	};
 
@@ -290,9 +327,8 @@ export default function App() {
 					entry={detail}
 					progress={progress}
 					favorite={favorites.includes(detail.id)}
-					active={!playing}
 					onFavorite={() => toggleFavorite(detail.id)}
-					onPlay={(queue, index) => setPlaying({ queue, index })}
+					onPlay={play}
 					onClose={closeDetail}
 				/>
 			)}

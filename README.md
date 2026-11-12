@@ -14,6 +14,27 @@ Construite avec React + Vite, et un Worker Cloudflare (Hono) qui sert de relais.
 - Reprise de lecture pour les films et les épisodes
 - Interface adaptée au mobile
 
+## Android TV
+
+Le dossier `android/` contient l'application Android TV : l'interface web est embarquée
+dans l'APK, la lecture est confiée au lecteur natif (ExoPlayer), qui lit aussi les MKV,
+l'audio AC3 et les flux `.ts`. Aucun serveur n'est nécessaire.
+
+```bash
+npm run build                          # interface web
+cd android && ./gradlew assembleRelease
+# → android/app/build/outputs/apk/release/app-release.apk
+```
+
+Il faut le SDK Android (`ANDROID_HOME`) et Java 17. L'APK est aussi construit par
+GitHub Actions (workflow « Android TV APK », onglet Actions → artefact `lumio-tv`).
+
+Installation sur la TV : activer « Sources inconnues », puis installer l'APK avec
+l'appli *Downloader*, une clé USB, ou `adb install app-release.apk`.
+
+Télécommande : flèches pour naviguer, OK pour ouvrir, Retour pour fermer. Pendant une
+chaîne en direct, Haut / Bas (ou CH+ / CH−) changent de chaîne.
+
 ## Développement
 
 ```bash

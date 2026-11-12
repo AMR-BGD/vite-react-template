@@ -850,3 +850,29 @@
 		padding: 0 8px;
 	}
 }
+
+/* ---------- Remote control (TV) ---------- */
+
+.page button,
+.page select {
+	scroll-margin: calc(var(--bar) + 32px) var(--gutter) 32px;
+}
+
+.card:focus-visible {
+	outline: none;
+}
+
+.btn:focus-visible,
+.chip:focus-visible,
+.topbar nav button:focus-visible,
+.icon-btn:focus-visible,
+.link:focus-visible {
+	outline: 3px solid var(--text);
+	outline-offset: 2px;
+}
+
+.episodes li button:focus-visible {
+	outline: none;
+	background: var(--surface-2);
+	box-shadow: inset 4px 0 0 var(--accent);
+}

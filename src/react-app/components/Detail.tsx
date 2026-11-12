@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Show, Stream } from "../lib/m3u";
 import type { Progress } from "../lib/storage";
 import { Poster } from "./Cards";
@@ -7,8 +7,6 @@ interface Props {
 	entry: Stream | Show;
 	progress: Record<string, Progress>;
 	favorite: boolean;
-	/** False while the player is on top: Escape then belongs to the player. */
-	active: boolean;
 	onFavorite: () => void;
 	onPlay: (queue: Stream[], index: number) => void;
 	onClose: () => void;
@@ -16,7 +14,7 @@ interface Props {
 
 const pct = (p?: Progress) => (p ? Math.min(100, (p.t / p.d) * 100) : 0);
 
-export default function Detail({ entry, progress, favorite, active, onFavorite, onPlay, onClose }: Props) {
+export default function Detail({ entry, progress, favorite, onFavorite, onPlay, onClose }: Props) {
 	const show = entry.kind === "series" ? entry : null;
 	const seasons = useMemo(
 		() => (show ? [...new Set(show.episodes.map((e) => e.season!))] : []),
@@ -40,11 +38,13 @@ export default function Detail({ entry, progress, favorite, active, onFavorite, 
 
 	const [season, setSeason] = useState(() => show?.episodes[resumeIndex]?.season ?? seasons[0]);
 
+	// Focus the play button on open, give focus back to the card on close.
+	const playRef = useRef<HTMLButtonElement>(null);
 	useEffect(() => {
-		const onKey = (e: KeyboardEvent) => active && e.key === "Escape" && onClose();
-		window.addEventListener("keydown", onKey);
-		return () => window.removeEventListener("keydown", onKey);
-	}, [onClose, active]);
+		const previous = document.activeElement as HTMLElement | null;
+		playRef.current?.focus();
+		return () => previous?.focus();
+	}, []);
 
 	const started = show ? !!progress[show.episodes[resumeIndex]?.id] : !!progress[entry.id];
 	const play = () => (show ? onPlay(show.episodes, resumeIndex) : onPlay([entry as Stream], 0));
@@ -73,7 +73,7 @@ export default function Detail({ entry, progress, favorite, active, onFavorite, 
 							</p>
 						)}
 						<div className="actions">
-							<button className="btn primary" onClick={play}>
+							<button className="btn primary" onClick={play} ref={playRef} data-autofocus>
 								▶ {started ? "Reprendre" : "Lecture"}
 								{show && next ? ` S${next.season} E${next.episode}` : ""}
 							</button>

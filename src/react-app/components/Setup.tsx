@@ -51,7 +51,11 @@ export default function Setup({ onUrl, onFile }: Props) {
 				</form>
 				{error && <p className="error">{error}</p>}
 				<div className="setup-alt">
-					<label className={`btn ${busy ? "disabled" : ""}`}>
+					<label
+						className={`btn ${busy ? "disabled" : ""}`}
+						tabIndex={0}
+						onKeyDown={(e) => e.key === "Enter" && e.currentTarget.click()}
+					>
 						Importer un fichier .m3u
 						<input
 							type="file"

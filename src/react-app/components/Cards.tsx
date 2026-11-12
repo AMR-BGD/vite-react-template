@@ -78,13 +78,13 @@ export function Row({ title, entries, onOpen, pct, label, onMore }: ListProps & 
 			<header>
 				<h2>{title}</h2>
 				{onMore && entries.length > 6 && (
-					<button className="link" onClick={onMore}>
+					<button className="link" tabIndex={-1} onClick={onMore}>
 						Tout voir ({entries.length})
 					</button>
 				)}
 			</header>
 			<div className="row-wrap">
-				<button className="row-arrow left" onClick={() => scroll(-1)} aria-label="Précédent">
+				<button className="row-arrow left" tabIndex={-1} onClick={() => scroll(-1)} aria-label="Précédent">
 					‹
 				</button>
 				<div className="row-track" ref={ref}>
@@ -100,7 +100,7 @@ export function Row({ title, entries, onOpen, pct, label, onMore }: ListProps & 
 						</button>
 					)}
 				</div>
-				<button className="row-arrow right" onClick={() => scroll(1)} aria-label="Suivant">
+				<button className="row-arrow right" tabIndex={-1} onClick={() => scroll(1)} aria-label="Suivant">
 					›
 				</button>
 			</div>

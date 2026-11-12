@@ -158,20 +158,16 @@ function PlayerView({ queue, index, resume, onIndex, onProgress, onClose }: Prop
 			clearTimeout(timer);
 			timer = setTimeout(() => setIdle(true), 3500);
 		};
-		const onKey = (e: KeyboardEvent) => {
-			wake();
-			if (e.key === "Escape") onClose();
-		};
 		window.addEventListener("pointermove", wake);
 		window.addEventListener("pointerdown", wake);
-		window.addEventListener("keydown", onKey);
+		window.addEventListener("keydown", wake);
 		return () => {
 			clearTimeout(timer);
 			window.removeEventListener("pointermove", wake);
 			window.removeEventListener("pointerdown", wake);
-			window.removeEventListener("keydown", onKey);
+			window.removeEventListener("keydown", wake);
 		};
-	}, [onClose]);
+	}, []);
 
 	const hasPrev = index > 0;
 	const hasNext = index < queue.length - 1;
@@ -188,7 +184,7 @@ function PlayerView({ queue, index, resume, onIndex, onProgress, onClose }: Prop
 			/>
 
 			<div className="player-bar">
-				<button className="icon-btn" onClick={onClose} aria-label="Retour">
+				<button className="icon-btn" onClick={onClose} aria-label="Retour" data-autofocus>
 					←
 				</button>
 				<div className="player-title">
