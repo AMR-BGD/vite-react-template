@@ -12,7 +12,9 @@
 		"publish": true
 	},
 	"dependencies": {
+		"hls.js": "^1.7.4",
 		"hono": "4.11.1",
+		"mpegts.js": "^1.8.2",
 		"react": "19.2.1",
 		"react-dom": "19.2.1"
 	},
